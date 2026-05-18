@@ -1,0 +1,10 @@
+node_modules
+.env
+.env.*
+dist
+coverage
+*.log
+.DS_Store
+.vscode/.ropeproject
+frontend/dist
+backend/uploads
