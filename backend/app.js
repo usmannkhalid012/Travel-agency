@@ -2,7 +2,6 @@ const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const rateLimit = require('express-rate-limit');
-const connectDB = require('./config/db');
 
 const authRoutes = require('./routes/authRoutes');
 const busRoutes = require('./routes/busRoutes');
@@ -24,19 +23,6 @@ const allowedOrigins = new Set(
     'http://127.0.0.1:5174'
   ].filter(Boolean)
 );
-
-// Serverless platforms (e.g., Vercel) may execute the app without running `server.js`.
-// Ensure we establish MongoDB connection before handling API routes.
-if (process.env.VERCEL || String(process.env.AUTO_CONNECT_DB).toLowerCase() === 'true') {
-  app.use(async (req, res, next) => {
-    try {
-      await connectDB();
-      next();
-    } catch (err) {
-      next(err);
-    }
-  });
-}
 
 app.use(cors({
   origin: (origin, callback) => {
