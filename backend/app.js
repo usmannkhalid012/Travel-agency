@@ -46,6 +46,14 @@ app.get('/api/health', (req, res) => {
   res.json({ success: true, message: 'Bus Ticket Management API is healthy' });
 });
 
+// Basic root route for platforms that hit `/`
+app.get('/', (req, res) => {
+  res.json({ success: true, message: 'Bus Ticket Management API - root' });
+});
+
+// Avoid noisy 404s from browsers requesting favicon
+app.get('/favicon.ico', (req, res) => res.status(204).end());
+
 app.use('/api/auth', authRoutes);
 app.use('/api/buses', busRoutes);
 app.use('/api/bookings', bookingRoutes);
