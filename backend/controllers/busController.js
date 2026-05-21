@@ -5,6 +5,8 @@ const ApiError = require('../utils/apiError');
 const asyncHandler = require('../utils/asyncHandler');
 const apiResponse = require('../utils/apiResponse');
 
+const isServerlessRuntime = () => Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.NETLIFY);
+
 // Helper to save buffer locally and return a public URL
 // Accepts `req` so we can construct the correct host/protocol when
 // BACKEND_URL is not provided.
@@ -108,6 +110,9 @@ const createBus = asyncHandler(async (req, res) => {
   }
 
   if (req.file) {
+    if (isServerlessRuntime()) {
+      throw new ApiError(400, 'Image upload is not supported on serverless deployments without external storage. Send an image URL instead.');
+    }
     try {
       payload.image = await saveBufferLocally(req, req.file.buffer, req.file.mimetype);
       console.log('Saved image locally for new bus:', payload.image);
@@ -152,6 +157,9 @@ const updateBus = asyncHandler(async (req, res) => {
 
   Object.assign(bus, payload);
   if (req.file) {
+    if (isServerlessRuntime()) {
+      throw new ApiError(400, 'Image upload is not supported on serverless deployments without external storage. Send an image URL instead.');
+    }
     try {
       bus.image = await saveBufferLocally(req, req.file.buffer, req.file.mimetype);
       console.log('Saved image locally for updated bus:', bus.image);

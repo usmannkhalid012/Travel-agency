@@ -12,11 +12,31 @@ const { notFound, errorHandler } = require('./middleware/errorMiddleware');
 
 const app = express();
 
+// Vercel/other platforms sit behind a reverse proxy.
+// This makes req.ip and req.protocol respect X-Forwarded-* headers.
+app.set('trust proxy', 1);
+
 const path = require('path');
+
+const vercelOrigin = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null;
+
+// Support multiple origins when frontend/backend run on different URLs.
+// Example: CORS_ORIGINS="https://app.vercel.app,https://admin.example.com"
+const parseOrigins = (value) => (value || '')
+  .split(/[,\s]+/)
+  .map((s) => s.trim())
+  .filter(Boolean);
+
+const extraAllowedOrigins = [
+  ...parseOrigins(process.env.CORS_ORIGINS),
+  ...parseOrigins(process.env.CLIENT_URLS)
+];
 
 const allowedOrigins = new Set(
   [
     process.env.CLIENT_URL,
+    vercelOrigin,
+    ...extraAllowedOrigins,
     'http://localhost:5173',
     'http://localhost:5174',
     'http://127.0.0.1:5173',

@@ -3,6 +3,8 @@ const asyncHandler = require('../utils/asyncHandler');
 const apiResponse = require('../utils/apiResponse');
 const ApiError = require('../utils/apiError');
 
+const isServerlessRuntime = () => Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.NETLIFY);
+
 const getAllUsers = asyncHandler(async (req, res) => {
   const users = await User.find().select('-password').sort('-createdAt');
   apiResponse(res, 200, 'Users fetched successfully', users);
@@ -21,6 +23,9 @@ const updateProfile = asyncHandler(async (req, res) => {
 
   // If a file was uploaded, save it locally and set profileImage to its URL
   if (req.file && req.file.buffer) {
+    if (isServerlessRuntime()) {
+      throw new ApiError(400, 'Profile image upload is not supported on serverless deployments without external storage. Send a profileImage URL instead.');
+    }
     try {
       // reuse local save logic similar to buses
       const fs = require('fs');
