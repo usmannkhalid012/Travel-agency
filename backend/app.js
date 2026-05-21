@@ -46,7 +46,11 @@ const allowedOrigins = new Set(
 
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.has(origin) || /^https?:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin)) {
+    const isVercelApp = typeof origin === 'string' && /^https:\/\/[a-z0-9-]+\.vercel\.app$/i.test(origin);
+
+    // Hardcoded convenience: always allow Vercel app domains so you don't
+    // need to keep updating env vars when frontend/backend URLs change.
+    if (!origin || allowedOrigins.has(origin) || /^https?:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin) || isVercelApp) {
       return callback(null, true);
     }
 
